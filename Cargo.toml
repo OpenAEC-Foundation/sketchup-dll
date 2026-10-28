@@ -10,7 +10,7 @@ repository = "https://github.com/OpenAEC-Foundation/skp-reader"
 [workspace]
 
 [dependencies]
-openaec-model = { version = "0.1.0", git = "https://github.com/OpenAEC-Foundation/openaec-model", rev = "392747b39bb56721aeac0f007002e6ea6b332eb6" }
+openaec-model = { version = "0.1.0", git = "https://github.com/OpenAEC-Foundation/openaec-model", rev = "2994963fcea8d1240d44801dddd1d3a351f05629" }
 glam = "0.30"
 serde_json = "1"
 flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
