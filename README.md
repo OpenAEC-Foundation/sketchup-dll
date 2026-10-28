@@ -1,6 +1,6 @@
 # skp-reader
 
-Partial pure-Rust SketchUp SKP reader, classic and 2021+ containers. Extracted from OpenAEC Foundation Open 3D Viewer Studio.
+Pure-Rust reader for SketchUp SKP files, classic and ZIP/VFF containers.
 
 ```rust,no_run
 use skp_reader::SkpLoader;
@@ -23,7 +23,7 @@ Partial reader ported from openskp 1.3/1.4.0: classic SketchUp 3–2020 MFC arch
 2021+ ZIP/VFF containers, triangulated faces, placed groups/components, tags, hidden tags,
 material colours and dynamic attributes. Inches become metres, Z stays up.
 Textures use their average colour; texture mapping and soft-edge smoothing are not implemented.
-This is the existing viewer implementation, not a claim of complete SKP compatibility.
+SKP support is partial; this library does not claim complete compatibility.
 
 Large corpus fixtures stay in the viewer repository. To run its 21-file regression suite,
 set `SKP_TEST_MODELS` to the absolute `test-models` directory of open-3d-viewer and run
@@ -31,7 +31,7 @@ set `SKP_TEST_MODELS` to the absolute `test-models` directory of open-3d-viewer 
 
 ## Attribution
 
-The reader is a Rust port of [openskp](https://github.com/iamahsanmehmood/openskp),
+The parsing implementation is a Rust port of [openskp](https://github.com/iamahsanmehmood/openskp),
 MIT, copyright Ahsan Mehmood. Preserve the upstream MIT license in THIRD_PARTY_LICENSES.md.
 No sample models are distributed with this crate.
 

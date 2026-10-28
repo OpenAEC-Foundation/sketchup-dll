@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.88"
 license = "LGPL-3.0-or-later"
-description = "Partial pure-Rust SketchUp SKP reader, classic and 2021+ containers"
+description = "Pure-Rust reader for SketchUp SKP files, classic and ZIP/VFF containers"
 repository = "https://github.com/OpenAEC-Foundation/skp-reader"
 
 [workspace]
