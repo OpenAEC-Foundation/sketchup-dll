@@ -10,34 +10,36 @@
 mod legacy;
 mod vff;
 
-use openaec_model::{Loaded, Loader, Phase, Progress, DEFAULT_COLOR, Source};
-use openaec_model::model::{Layer, ProjectData};
 use glam::{DMat3, DVec3};
 use std::collections::{HashMap, HashSet};
 
-pub struct SkpLoader;
+/// Geometry read from the file, in metres and Z-up coordinates.
+#[derive(Debug, Clone, Default)]
+pub struct Mesh {
+    pub name: String,
+    pub color: [f32; 3],
+    pub positions: Vec<f32>,
+    pub normals: Vec<f32>,
+    pub colors: Option<Vec<[u8; 4]>>,
+    pub indices: Vec<u32>,
+    /// Source element id, first triangle index and index count.
+    pub elements: Vec<(u64, u32, u32)>,
+    /// Source element properties as JSON objects.
+    pub props: Vec<(u64, String)>,
+    pub hidden: bool,
+}
 
-impl Loader for SkpLoader {
-    fn name(&self) -> &'static str {
-        "SketchUp"
-    }
+impl Mesh {
+    pub fn vertex_count(&self) -> usize { self.positions.len() / 3 }
+    pub fn triangle_count(&self) -> usize { self.indices.len() / 3 }
+}
 
-    fn extensions(&self) -> &'static [&'static str] {
-        &["skp"]
-    }
+const DEFAULT_COLOR: [f32; 3] = [0.72, 0.72, 0.74];
 
-    fn load(&self, source: &Source) -> Result<Vec<Layer>, String> {
-        self.load_with(source, &Progress::default()).map(|l| l.layers)
-    }
-
-    fn load_with(&self, source: &Source, progress: &Progress) -> Result<Loaded, String> {
-        progress.set(Phase::Read);
-        let data = source.read()?;
-        progress.set(Phase::Convert);
-        let parsed = parse(&data)?;
-        let layers = SceneBuilder::new(&parsed).build();
-        Ok(Loaded { layers, views: Vec::new(), project: ProjectData::default() })
-    }
+/// Read a SketchUp file from bytes into meshes, one per tag/material batch.
+pub fn read(data: &[u8]) -> Result<Vec<Mesh>, String> {
+    let parsed = parse(data)?;
+    Ok(SceneBuilder::new(&parsed).build())
 }
 
 /// Reads either container into the shared model.
@@ -294,7 +296,7 @@ struct SceneBuilder<'p> {
     parsed: &'p Parsed,
     /// Triangulated faces per definition (`None` = root).
     meshes: HashMap<Option<u64>, Vec<FaceMesh>>,
-    layers: Vec<Layer>,
+    layers: Vec<Mesh>,
     layer_of_tag: HashMap<String, usize>,
     next_element: u64,
     /// Definitions being placed, to stop on a definition that contains itself.
@@ -313,7 +315,7 @@ impl<'p> SceneBuilder<'p> {
         }
     }
 
-    fn build(mut self) -> Vec<Layer> {
+    fn build(mut self) -> Vec<Mesh> {
         let parsed = self.parsed;
         self.place(None, &parsed.root, &IDENTITY, DEFAULT_TAG, None, None);
         self.layers
@@ -376,12 +378,12 @@ impl<'p> SceneBuilder<'p> {
             return i;
         }
         let t = self.tag(tag);
-        self.layers.push(Layer {
+        self.layers.push(Mesh {
             name: display_tag(tag).to_string(),
             color: t.color.map(|c| c as f32 / 255.0),
             colors: Some(Vec::new()),
             hidden: t.hidden,
-            ..Layer::default()
+            ..Mesh::default()
         });
         self.layer_of_tag.insert(tag.to_string(), self.layers.len() - 1);
         self.layers.len() - 1
@@ -668,10 +670,10 @@ mod tests {
     #[test]
     #[cfg(feature = "corpus-tests")]
     fn loads_sample_into_tag_layers() {
-        let model = openaec_model::load_with_loader(&SkpLoader, &Source::from(sample("TestModel.skp")), &Progress::default()).expect("skp");
-        assert!(model.triangle_count() > 100, "{} triangles", model.triangle_count());
-        assert!(model.bounds.is_valid());
-        assert!(model.layers.iter().all(|l| l.colors.as_ref().is_some_and(|c| c.len() == l.vertex_count())));
+        let meshes = read(&std::fs::read(sample("TestModel.skp")).unwrap()).expect("skp");
+        assert!(meshes.iter().map(Mesh::triangle_count).sum::<usize>() > 100);
+        assert!(meshes.iter().flat_map(|m| &m.positions).all(|v| v.is_finite()));
+        assert!(meshes.iter().all(|m| m.colors.as_ref().is_some_and(|c| c.len() == m.vertex_count())));
     }
 
     #[test]
