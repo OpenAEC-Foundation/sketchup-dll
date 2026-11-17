@@ -1,6 +1,6 @@
-# skp-reader
+# sketchup-dll
 
-Pure-Rust reader for SketchUp SKP files, classic and ZIP/VFF containers.
+Pure-Rust reader for SketchUp SKP files, classic and ZIP/VFF containers. The crate is `skp-reader`.
 
 ```rust,no_run
 let bytes = std::fs::read("model.skp")?;
@@ -25,7 +25,7 @@ Textures use their average colour; texture mapping and soft-edge smoothing are n
 SKP support is partial; this library does not claim complete compatibility.
 
 Large corpus fixtures stay in the viewer repository. To run its 21-file regression suite,
-set `SKP_TEST_MODELS` to the absolute `test-models` directory of open-3d-viewer and run
+set `SKP_TEST_MODELS` to the absolute `test-models` directory of [open-bim-suite](https://github.com/OpenAEC-Foundation/open-bim-suite) and run
 `cargo test --features corpus-tests`. `skp_dir_survey` is an ignored diagnostic that uses `SKP_DIR`.
 
 ## Attribution
